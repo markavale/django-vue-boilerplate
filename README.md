@@ -1,23 +1,37 @@
-# django-boilerplate
+# django-vuejs-boilerplate
 
 ## Project Details
-This Template includes django-rest-auth for authentication and Token authentication.
-It uses Vuetify, Vuex, and axios for http requests.
+This template includes the following details below:
+
+* Djang Restframework
+* Token Authentition
+* Django Allauth
+* Custom User Model
+* Django Cors Headers
+* VueJs
+* Vuex
+* Vuetify
+* Vue Router
+* Axios
 
 ## Project setup
 ```
 python3 -m venv env
+>> cd env/scripts
+>> .\activate
+>> cd ../../
 pip install -r requirements.txt
 python manage.py migrate
 npm install
 ```
 
-### Compiles and hot-reloads for development
+### Compiles and hot-reloads for development and run django server
 ```
+python manage.py runserver
 npm run serve
 ```
 
-### Compiles and minifies for production
+### Compiles and minifies for production for VueJS
 ```
 npm run build
 ```
