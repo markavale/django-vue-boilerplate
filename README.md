@@ -1,7 +1,14 @@
 # django-boilerplate
 
+## Project Details
+This Template includes django-rest-auth for authentication and Token authentication.
+It uses Vuetify, Vuex, and axios for http requests.
+
 ## Project setup
 ```
+python3 -m venv env
+pip install -r requirements.txt
+python manage.py migrate
 npm install
 ```
 
