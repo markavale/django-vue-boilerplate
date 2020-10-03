@@ -4,7 +4,7 @@
 This template includes the following details below:
 
 * Djang Restframework
-* Token Authentition
+* Token Authentication
 * Django Allauth
 * Custom User Model
 * Django Cors Headers
