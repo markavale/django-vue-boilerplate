@@ -3,7 +3,7 @@
 ## Project Details
 This template includes the following details below:
 
-* Djang Restframework
+* Django Restframework
 * Token Authentication
 * Django Allauth
 * Custom User Model
