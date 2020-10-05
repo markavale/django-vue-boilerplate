@@ -6,7 +6,7 @@ from rest_framework.generics import ListAPIView
 
 class UserList(ListAPIView):
     serializer_class = UserSerializer
-    permission_claases = [IsAuthenticated,]
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         queryset = User.objects.all()
