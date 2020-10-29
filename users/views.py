@@ -10,7 +10,6 @@ from dj_rest_auth.registration.views import VerifyEmailView
 from django.contrib.auth import login, authenticate
 
 class UserCreate(generics.CreateAPIView):
-    authentication_classes = ()
     permission_classes = (AllowAny,)
     serializer_class = UserSerializer
 
