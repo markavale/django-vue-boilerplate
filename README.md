@@ -11,6 +11,13 @@ pip install -r requirements.txt
 python manage.py migrate
 ```
 
+## Project setup for pipenv users
+```
+pipenv shell
+pipenv install
+python manage.py migrate
+```
+
 ## Create .env file for your env variables
 ```
 Copy paste this and replace it with your own variables
@@ -31,10 +38,5 @@ EMAIL_HOST_USER = 'your_email'
 ```
 See [Configuration Reference of python decouple](https://pypi.org/project/python-decouple/).
 
-## Project setup for pipenv users
-```
-pipenv shell
-pipenv install
-python manage.py migrate
-```
+
 
