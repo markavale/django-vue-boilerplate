@@ -1,31 +1,40 @@
 # django-boilerplate
 
 ## Project Details
-This Template includes django-rest-auth for authentication and Token authentication.
-It uses Vuetify, Vuex, and axios for http requests.
+This Template includes dj-rest-auth for authentication and Token authentication.
 
-## Project setup
+
+## Project setup for virtualenv users
 ```
 python3 -m venv env
 pip install -r requirements.txt
 python manage.py migrate
-npm install
 ```
 
-### Compiles and hot-reloads for development
+## Create .env file for your env variables
 ```
-npm run serve
+Copy paste this and replace it with your own variables
+[settings]
+SECRET_KEY = 'sx!6l+&+d(hys6bz)x5lrdfu2$k=6db&tsjz2b&qg-w-nuj#r+'
+DJANGO_SETTINGS_MODULE = 'base.settings.dev'
+
+[mysql-database-config] if you're using mysql
+NAME=your_db_name
+USER=your_db_user
+PASSWORD=your_db_password
+PORT=your_db_port
+HOST=your_db_host
+
+[email]
+EMAIL_HOST_PASSWORD = 'your_email_pass'
+EMAIL_HOST_USER = 'your_email'
+```
+See [Configuration Reference of python decouple](https://pypi.org/project/python-decouple/).
+
+## Project setup for pipenv users
+```
+pipenv shell
+pipenv install
+python manage.py migrate
 ```
 
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
