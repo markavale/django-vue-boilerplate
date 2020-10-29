@@ -1,4 +1,4 @@
-# django-boilerplate
+# djangovue-backend-boilerplate
 
 ## Project Details
 This Template includes dj-rest-auth for authentication and Token authentication.
