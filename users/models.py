@@ -1,15 +1,11 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-#from .managers import UserManager
+from .managers import UserManager
 # Validation
 from django.core.validators import RegexValidator
 from rest_framework.authtoken.models import Token
 # import datetime # It could use for computing Age of users
 
-from django.conf import settings
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from rest_framework.authtoken.models import Token
 
 # REGEX FOR STRING COMBINATIONS
 USERNAME_REGEX = '^[a-za-z0-9]+$'
@@ -31,63 +27,59 @@ class User(AbstractUser):
                            )],
         unique=True
     )
-    first_name = models.CharField(max_length=255, null=True, blank=False,
-                                  validators=[RegexValidator(regex=NAME_REGEX,
-                                                             message='First name must be letters only',
-                                                             code='invalid_first_name'
-                                                             )]
-                                  )
-    last_name = models.CharField(max_length=255, null=True, blank=False,
-                                 validators=[RegexValidator(regex=NAME_REGEX,
-                                                            message='Last name must be letters only',
-                                                            code='invalid_last_name'
-                                                            )]
-                                 )
     image = models.ImageField(default='default.jpg',
                               upload_to='avatar', null=True, blank=True)
-    gender = models.CharField(
-        max_length=10, blank=True, null=True, choices=GENDER_CHOICES, default="")
+    # gender = models.CharField(
+    #     max_length=10, blank=True, null=True, choices=GENDER_CHOICES, default="")
     email = models.EmailField(unique=True, blank=False,
                               error_messages={
                                   'unique': "A user with that email already exists.",
                               })
+    verified            = models.BooleanField(default=False)
+    active              = models.BooleanField(default=True)
+    staff               = models.BooleanField(default=False)
+    admin               = models.BooleanField(default=False)
+
+    objects = UserManager()
 
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = ['email',]
 
     def __str__(self):
-        return self.username
-
-    #objects = UserManager()
+        return self.username            
 
     def get_total_user(self):
         return self.User.objects.all().count()
 
     def get_user_type(self):
-        if self.is_admin:
+        if self.admin:
             return "Admin"
-        if self.is_staff:
+        if self.staff:
             return "Staff"
-        if self.is_active:
+        if self.active:
             return "User"
 
-    def get_full_name(self):
-        return self.first_name + " " + self.last_name
+    # def get_full_name(self):
+    #     return self.first_name + " " + self.last_name
 
-    def get_first_name(self):
-        if self.first_name:
-            return self.first_name
-        return self.username
+    # def get_first_name(self):
+    #     if self.first_name:
+    #         return self.first_name
+    #     return self.username
 
-    def get_last_name(self):
-        if self.last_name:
-            return self.last_name
-        return self.username
+    # def get_last_name(self):
+    #     if self.last_name:
+    #         return self.last_name
+    #     return self.username
 
-    def has_perm(self, perm, obj=None):  # required
+    def has_perm(self, perm, obj=None):
+        "Does the user have a specific permission?"
+        # Simplest possible answer: Yes, always
         return True
 
-    def has_module_perms(self, app_label):  # required
+    def has_module_perms(self, app_label):
+        "Does the user have permissions to view the app `app_label`?"
+        # Simplest possible answer: Yes, always
         return True
 
     @property
@@ -97,21 +89,18 @@ class User(AbstractUser):
         else:
             return '/media/default.jpg'
 
-    # @property
-    # def is_admin(self):
-    #     return self.admin
+    @property
+    def is_admin(self):
+        return self.admin
 
-    # @property
-    # def is_staff(self):
-    #     return self.staff
+    @property
+    def is_staff(self):
+        return self.staff
 
     # @property
     # def is_active(self):
     #     return self.active
     
-
-
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def create_auth_token(sender, instance=None, created=False, **kwargs):
-    if created:
-        Token.objects.create(user=instance)
+    @property
+    def is_verified(self):
+        return self.verified

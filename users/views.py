@@ -1,15 +1,55 @@
 from django.shortcuts import render
-from . models import User
-from .serializers import UserSerializer
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.generics import ListAPIView
+from rest_framework.response import Response
+from rest_framework import status, generics
+from rest_framework.views import APIView
+from .serializers import UserSerializer, CustomLoginSerializer
+from django.contrib.auth import authenticate
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from dj_rest_auth.views import LoginView
+from dj_rest_auth.registration.views import VerifyEmailView
+from django.contrib.auth import login, authenticate
 
-class UserList(ListAPIView):
+class UserCreate(generics.CreateAPIView):
+    authentication_classes = ()
+    permission_classes = (AllowAny,)
     serializer_class = UserSerializer
-    permission_claases = [IsAuthenticated,]
 
-    def get_queryset(self):
-        queryset = User.objects.all()
-        # return only active user => if active return else
-        return queryset
-# Create your views here.
+class VerifyEmailView(VerifyEmailView):
+
+    def save(self, request, *args, **kwargs):
+        user = super(VerifyEmailView, self).save(request)
+        user.verified = True
+        print(user.verified)
+        return user
+
+
+class LoginView(APIView):
+    permission_classes = (AllowAny, )
+
+    def post(self, request, *args, **kwargs):
+        username = request.data.get("username")
+        email = request.data.get("email")
+        password = request.data.get("password")
+        user = authenticate(request, username=username, email=email, password=password)
+        if user:
+            return Response({"token": user.auth_token.key})
+        else:
+            return Response({"error": "Wrong Credentials"}, status=status.HTTP_400_BAD_REQUEST)
+
+# class LoginUserView(LoginView): # For custom login
+#     serializer_class = CustomLoginSerializer
+#     permission_classes = [AllowAny]
+
+#     def post(self, request, *args, **kwargs):
+#         serializer = CustomLoginSerializer(data=request.data)  # changed  to desired serializer
+#         serializer.is_valid(raise_exception=True)
+#         user = serializer.validated_data['user']
+#         authenticate(request, user)
+#         return super(LoginUserView, self).post(request)
+
+class UserDetailView(APIView):
+    #authentication_classes = []
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        return Response({"email": request.user.email})

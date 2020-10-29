@@ -1,66 +1,105 @@
-# from allauth.account.adapter import get_adapter
-# from rest_auth.registration.serializers import RegisterSerializer
 from rest_framework import serializers
-# from rest_framework.authtoken.models import Token
+from django.conf import settings
+from django.contrib import auth
+from rest_framework.exceptions import AuthenticationFailed
+from dj_rest_auth.serializers import PasswordResetSerializer, LoginSerializer, PasswordResetSerializer
+from rest_framework.authtoken.models import Token
 
-from .models import User
-
+User = settings.AUTH_USER_MODEL
 
 class UserSerializer(serializers.ModelSerializer):
+    confirm_password = serializers.CharField()
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ('username', 'email', 'password')
         extra_kwargs = {'password': {'write_only': True}}
 
+    def validate(self, data):
+        if not data.get('password') or not data.get('confirm_password'):
+            raise serializers.ValidationError("Please enter a password and "
+                "confirm it.")
+
+        if data.get('password') != data.get('confirm_password'):
+            raise serializers.ValidationError("Those passwords don't match.")
+
+        return data
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        user = User(
+            email=validated_data['email'],
+            username=validated_data['username']
+        )
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
 
 
+class RegisterUserSerializer(serializers.ModelSerializer):
+    # password = serializers.CharField(
+    #     max_length=68, min_length=6, write_only=True)
+
+    default_error_messages = {
+        'username': 'The username should only contain alphanumeric characters'}
+
+    class Meta:
+        model = User
+        fields = ['email', 'username', 'password']
+        extra_kwargs = {
+            'password': {'write_only': True, 'min_length': 8, 'max_length': 68}
+            }
+
+    def validate(self, attrs):
+        email = attrs.get('email', '')
+        username = attrs.get('username', '')
+
+        if not username.isalnum():
+            raise serializers.ValidationError(
+                self.default_error_messages)
+        # elif 
+        return attrs
+
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
 
 
+class CustomPasswordResetSerializer(PasswordResetSerializer):
+    def get_email_options(self) :
+        return {
+            'email_template_name': 'email/user_reset_password.html'
+        }
 
-# stuff for customizing rest-auth
-# class CustomRegisterSerializer(RegisterSerializer):
-#     is_student = serializers.BooleanField()
-#     is_teacher = serializers.BooleanField()
+        
+    # def save(self):
+    #     request = self.context.get('request')
+    #     # Set some values to trigger the send_email method.
+    #     opts = {
+    #         'use_https': request.is_secure(),
+    #         'from_email': settings.EMAIL_HOST_USER, 
+    #         'request': request,
+    #         # here I have set my desired template to be used
+    #         # don't forget to add your templates directory in settings to be found
+    #         'email_template_name': 'email/user_reset_password.html'
+    #     }
 
-#     class Meta:
-#         model = User
-#         fields = ('email', 'username', 'password', 'is_student', 'is_teacher')
+    #     opts.update(self.get_email_options())
+    #     self.reset_form.save(**opts)
 
-#     def get_cleaned_data(self):
-#         return {
-#             'username': self.validated_data.get('username', ''),
-#             'password1': self.validated_data.get('password1', ''),
-#             'password2': self.validated_data.get('password2', ''),
-#             'email': self.validated_data.get('email', ''),
-#             'is_student': self.validated_data.get('is_student', ''),
-#             'is_teacher': self.validated_data.get('is_teacher', '')
-#         }
+class CustomLoginSerializer(LoginSerializer):
 
-#     def save(self, request):
-#         adapter = get_adapter()
-#         user = adapter.new_user(request)
-#         self.cleaned_data = self.get_cleaned_data()
-#         user.is_student = self.cleaned_data.get('is_student')
-#         user.is_teacher = self.cleaned_data.get('is_teacher')
-#         user.save()
-#         adapter.save_user(request, user, self)
-#         return user
+    def validate(self, attrs):
+        username = attrs.get('username', '')
+        email = attrs.get('email', '')
+        password = attrs.get('password', '')
+        user = auth.authenticate(username=username, password=password)
+        if user is not None and not user.active:
+            print(True)
+            raise AuthenticationFailed('Account disabled, contact admin')
+        if not user:
+            raise AuthenticationFailed('Invalid credentials, try again')
+        # if not user.is_verified:
+        #     raise AuthenticationFailed('Email is not verified')
 
+        return super().validate(attrs)
 
-# class TokenSerializer(serializers.ModelSerializer):
-#     user_type = serializers.SerializerMethodField()
-
-#     class Meta:
-#         model = Token
-#         fields = ('key', 'user', 'user_type')
-
-#     def get_user_type(self, obj):
-#         serializer_data = UserSerializer(
-#             obj.user
-#         ).data
-#         is_student = serializer_data.get('is_student')
-#         is_teacher = serializer_data.get('is_teacher')
-#         return {
-#             'is_student': is_student,
-#             'is_teacher': is_teacher
-#         }
+# class VerifyEmailSerializer(serializers.ModelSerailizer):

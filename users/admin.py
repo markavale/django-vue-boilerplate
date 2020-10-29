@@ -10,14 +10,16 @@ class UserAdmin(UserAdmin):
     add_form = CustomUserCreationForm
     form = CustomUserChangeForm
     model = User
-    list_display = ['email', 'username', 'first_name',
-                    'last_name', 'gender', 'is_staff']
-    fieldsets = UserAdmin.fieldsets + (  # For Updating fields on Admin Panel
-        (('Additional Personal Info'), {'fields': ('gender','image')}),
+    list_display = ['email', 'username',  'admin', 'staff', 'active', 'verified']#'ip_address',
+    list_filter = ('active','staff','admin', ) # could be date joined
+    fieldsets = (
+        (None, {'fields': ('username','email', 'password', )}),
+        ('Personal info', {'fields': ('verified', 'image', )}),
+        ('Permissions', {'fields': ('admin','staff','active',)}),
     )
-    add_fieldsets = UserAdmin.add_fieldsets + (  # For Creating User on Admin Panel
-        (('Personal Info'), {'fields': ('last_name', 'first_name', 'email', 'gender','image',)}),
-    )
+    # add_fieldsets = UserAdmin.add_fieldsets + (  # For Creating User on Admin Panel
+    #     (('Personal Info'), {'fields': ('email','image',)}),#'ip_address',
+    # )
 
 
 admin.site.register(User, UserAdmin)

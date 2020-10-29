@@ -29,23 +29,53 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     #3rd party
+    'dj_rest_auth',
+    'rest_framework',
+    'rest_framework.authtoken',
     'django.contrib.sites',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'dj_rest_auth.registration',
+    'taggit',
+    'taggit_serializer',
     'corsheaders',
-    'rest_auth',
-    'rest_auth.registration',
-    'rest_framework',
-    'rest_framework.authtoken',
     #Local apps
     'users.apps.UsersConfig',
 ]
 
 
+# DJANGO RESTFRAMEWORK
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+}
+
+# DJ REST AUTH CONF
+OLD_PASSWORD_FIELD_ENABLED = True
+LOGOUT_ON_PASSWORD_CHANGE = False
+ACCOUNT_LOGOUT_ON_GET = True
+
+
+#'TOKEN_SERIALIZER': 'path.to.custom.TokenSerializer',
+REST_AUTH_SERIALIZERS = {
+    'LOGIN_SERIALIZER': 'users.serializers.CustomLoginSerializer',
+    'USER_SERIALIZER': 'users.serializers.UserSerializer',
+    'REGISTER_SERIALIZER': 'users.serializers.RegisterUserSerializer',
+    'PASSWORD_RESET_SERIALIZER ': 'users.serializers.CustomPasswordResetSerializer'
+}
+
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware', # cors middleware
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware', # cors headers
+    'corsheaders.middleware.CorsPostCsrfMiddleware', # trusted sites
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -54,12 +84,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+
 ROOT_URLCONF = 'base.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [], # BASE_DIR / 'templates' depends on frontend => build
+        'DIRS': [ os.path.join(BASE_DIR, 'frontend/public') ], # BASE_DIR / 'templates' depends on frontend => build
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -72,47 +103,21 @@ TEMPLATES = [
     },
 ]
 
-
-# Datamav
-# https://docs.djangoproject.com/en/3.1/ref/settings/#datamavs
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='localhost')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
 
-# DJANGO RESTFRAMEWORK
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-        'rest_framework.permissions.AllowAny',
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-    ),
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-    )
-}
 # Rest auth conf
 CSRF_COOKIE_NAME = "csrftoken"
 
-ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_EMAIL_REQUIRED = False
-ACCOUNT_AUTHENTICATION_METHOD = 'username'
-ACCOUNT_EMAIL_VERIFICATION = 'none'
-AUTH_USER_MODEL = 'users.User'
-
-# REST_AUTH_SERIALIZERS = { # declare this when you finish your user serializer
-#     'USER_DETAILS_SERIALIZER': 'users.serializers.UserSerializer',
-#     'TOKEN_SERIALIZER': 'users.serializers.TokenSerializer'
-# }
-
-# REST_AUTH_REGISTER_SERIALIZERS = { # Optional when you want to customize your registration api endponts
-#     'REGISTER_SERIALIZER': 'users.serializers.CustomRegisterSerializer',
-# }
+# ACCOUNT_UNIQUE_EMAIL = True
+# ACCOUNT_EMAIL_REQUIRED = False
+# ACCOUNT_AUTHENTICATION_METHOD = 'username'
+# ACCOUNT_EMAIL_VERIFICATION = 'none'
 
 # CUSTOM USER MODEL CONFIGS
 # ------------------------------------------------------------------------------
@@ -120,20 +125,38 @@ AUTH_USER_MODEL = 'users.User'
 AUTH_USER_MODEL = 'users.User'
 
 # DJANGO-ALLAUTH CONFIGS
-AUTHENTICATION_BACKENDS = [
-    # Needed to login by username in Django admin, regardless of `allauth`
-    'django.contrib.auth.backends.ModelBackend',
+#authentication backends REQURED!!!
+AUTHENTICATION_BACKENDS = (
+   "django.contrib.auth.backends.ModelBackend",
+#    'django.contrib.auth.backends.AllowAllUsersModelBackend',
+#    "allauth.account.auth_backends.AuthenticationBackend"
+)
 
-    # `allauth` specific authentication methods, such as login by e-mail
-    'allauth.account.auth_backends.AuthenticationBackend',
-]
+# https://docs.djangoproject.com/en/dev/ref/settings/#login-redirect-url
+LOGIN_REDIRECT_URL = '/'
+# https://django-allauth.readthedocs.io/en/latest/views.html#logout-account-logout
+LOGOUT_REDIRECT_URL = '/'
+
+ACCOUNT_SIGNUP_REDIRECT_URL  = '/login'
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
-# https://docs.djangoproject.com/en/dev/ref/settings/#login-redirect-url
-LOGIN_REDIRECT_URL = '' # index
-# https://django-allauth.readthedocs.io/en/latest/views.html#logout-account-logout
-LOGOUT_REDIRECT_URL = '' # index or any desired declared names
+
+# Django cors headers
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",
+    "http://localhost:8081",
+    "http://localhost:8000",
+]
+CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ORIGIN_ALLOW_ALL = False
+
+
+CORS_ALLOWED_ORIGINS = [
+]
+
+CSRF_TRUSTED_ORIGINS = [
+]
 
 
 # Internationalization
